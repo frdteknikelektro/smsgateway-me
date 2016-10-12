@@ -3,15 +3,26 @@
 namespace NotificationChannels\SMSGatewayMe;
 
 use NotificationChannels\SMSGatewayMe\Exceptions\CouldNotSendNotification;
-use NotificationChannels\SMSGatewayMe\Events\MessageWasSent;
-use NotificationChannels\SMSGatewayMe\Events\SendingMessage;
 use Illuminate\Notifications\Notification;
+use GuzzleHttp\Client;
+use Carbon\Carbon;
 
 class SMSGatewayMeChannel
 {
-    public function __construct()
+    protected $client;
+
+    protected $email;
+
+    protected $password;
+
+    protected $device_id;
+
+    public function __construct(Client $client, $email, $password, $device_id)
     {
-        // Initialisation code here
+        $this->client = $client;
+        $this->email = $email;
+        $this->password = $password;
+        $this->device_id = $device_id;
     }
 
     /**
@@ -24,10 +35,28 @@ class SMSGatewayMeChannel
      */
     public function send($notifiable, Notification $notification)
     {
-        //$response = [a call to the api of your notification send]
+        if (! $to = $notifiable->routeNotificationFor('sms-gateway-me')) {
+            return;
+        }
 
-//        if ($response->error) { // replace this by the code need to check for errors
-//            throw CouldNotSendNotification::serviceRespondedWithAnError($response);
-//        }
+        $message = $notification->toSmsGatewayMe($notifiable);
+
+        $result = $this->client->request('POST', '/api/v3/messages/send', [
+          'form_params' => [
+            'email' => $this->email,
+            'password' => $this->password,
+            'device' =>$this->device_id,
+            'number' => $to,
+            'message' => $message->text,
+            'send_at' => Carbon::now()->timestamp,
+            'expires_at' => Carbon::now()->addDay()->timestamp
+          ]
+        ]);
+
+        $response = json_decode($result->getBody());
+
+        if (count($response->result->fails)) { // replace this by the code need to check for errors
+          throw CouldNotSendNotification::serviceRespondedWithAnError($response);
+        }
     }
 }

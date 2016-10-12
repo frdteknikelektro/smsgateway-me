@@ -6,5 +6,12 @@ use Illuminate\Support\Arr;
 
 class SMSGatewayMeMessage
 {
-    // Message structure here
+    public $text;
+
+    public function text($text)
+    {
+        $this->text = $text;
+
+        return $this;
+    }
 }
