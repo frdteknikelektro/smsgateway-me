@@ -1,7 +1,7 @@
 {
-    "name": "laravel-notification-channels/smsgateway-me",
+    "name": "frdteknikelektro/smsgateway-me",
     "description": "SMSGatewayMe Notifications Channel for Laravel",
-    "homepage": "https://github.com/laravel-notification-channels/smsgateway-me",
+    "homepage": "https://github.com/frdteknikelektro/smsgateway-me",
     "license": "MIT",
     "authors": [
         {
